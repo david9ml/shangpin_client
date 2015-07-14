@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from secret_file import *
 from time import gmtime, strftime
+from datetime import timedelta, datetime
 import requests
 import json
 import hashlib
@@ -28,29 +29,32 @@ class Shangpin_client(object):
         print(strftime("%Y-%M-%d %H:%M"))
 
     def init_data(self):
-        self.timestamp = strftime("%Y-%m-%d %H:%M")
+        #self.timestamp = strftime("%Y-%m-%d %H:%M") + timedelta(minutes=10)
+        self.timestamp = (datetime.now() + timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M")
         self.data = {'app_key': self.app_key.encode("utf-8"), 'timestamp': self.timestamp.encode("utf-8")}
 
+    def reset(self):
+        self.init_data()
+        import gc
+        gc.collect()
+
     def set_sign(self):
-        md5_sign = "app_key=" + urllib.quote_plus(self.app_key.encode("utf-8")) + "&request=" + urllib.quote_plus(self.data['request'])+ "&timestamp=" + urllib.quote_plus(self.timestamp.encode('utf-8')) + "_" + self.app_secret.encode('utf-8')
-        #md5_sign = "app_key=" + urllib.quote_plus(self.app_key.encode("utf-8")) + "&request=" + self.data['request'] + "&timestamp=" + urllib.quote_plus(self.timestamp.encode('utf-8')) + "_" + self.app_secret.encode('utf-8')
+        if self.data['request']:
+            md5_sign = "app_key=" + urllib.quote_plus(self.app_key.encode("utf-8")) + "&request=" + urllib.quote_plus(self.data['request'])+ "&timestamp=" + urllib.quote_plus(self.timestamp.encode('utf-8')) + "_" + self.app_secret.encode('utf-8')
         print("md5_sign")
         print(md5_sign)
-        #md5_sign = "app_key=" + self.app_key + "&request=" + self.data['request']+ "&timestamp=" + self.timestamp + "_" + self.app_secret
-        #print(md5_sign)
         m = hashlib.md5()
         m.update(md5_sign)
         self.sign = m.hexdigest()
         self.data['sign'] = self.sign.upper()
+        return True
 
-    def set_data(self):
-        pass
+    def set_request_data(self, req_data_value):
+        print(json.dumps(req_data_value))
+        self.data['request'] = json.dumps(req_data_value, sort_keys=True, ensure_ascii=False).encode('utf8')
+        return True
 
     def req_post(self):
-        request_val = {"PageIndex":"1","PageSize":"100","endTime":"","startTime":""}
-        print(json.dumps(request_val))
-        self.data['request'] = json.dumps(request_val, sort_keys=True, ensure_ascii=False).encode('utf8')
-        #self.data['request'] = urllib.quote_plus(json.dumps(request_val, sort_keys=True))
         self.set_sign()
         print("data:")
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -59,6 +63,9 @@ class Shangpin_client(object):
         #response = requests.post(self.url+self.path, data=urllib.urlencode(self.data), headers=self.headers)
         response = requests.request('POST', self.url+self.path, data=self.data, headers=self.headers)
         print(response.content)
+        return True
 
     def set_path(self, path_value):
         self.path = path_value
+        return True
+

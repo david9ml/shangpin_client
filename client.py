@@ -62,8 +62,7 @@ class Shangpin_client(object):
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         #response = requests.post(self.url+self.path, data=urllib.urlencode(self.data), headers=self.headers)
         response = requests.request('POST', self.url+self.path, data=self.data, headers=self.headers)
-        print(response.content)
-        return True
+        return response
 
     def set_path(self, path_value):
         self.path = path_value

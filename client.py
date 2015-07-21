@@ -13,7 +13,7 @@ class Shangpin_client(object):
         self.app_secret = APP_SECRET
         self.params = {}
         self.data = {}
-        self.url = 'http://111.204.231.201:9090'
+        self.url = API_URL
         self.timestamp = ''
         self.sign = ''
         self.path = ''
@@ -30,7 +30,8 @@ class Shangpin_client(object):
 
     def init_data(self):
         #self.timestamp = strftime("%Y-%m-%d %H:%M") + timedelta(minutes=10)
-        self.timestamp = (datetime.now() + timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M")
+        #self.timestamp = (datetime.now() + timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M")
+        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
         self.data = {'app_key': self.app_key.encode("utf-8"), 'timestamp': self.timestamp.encode("utf-8")}
 
     def reset(self):

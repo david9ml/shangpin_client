@@ -4,6 +4,7 @@ import time
 import json
 
 shangpin_client = Shangpin_client()
+'''
 # 3.2 商品批量分页查询(loop)
 while True:
     shangpin_client.set_path('/commodity/findinfobypage')
@@ -16,7 +17,8 @@ while True:
     shangpin_client.reset()
     time.sleep(1)
 '''
-# 3.2 商品批量分页查询(loop)
+'''
+# 3.2 商品批量分页查询
 shangpin_client.set_path('/commodity/findinfobypage')
 request_data = {"PageIndex":"1","PageSize":"100","endTime":"","startTime":""}
 shangpin_client.set_request_data(request_data)
@@ -24,6 +26,48 @@ response = shangpin_client.req_post()
 content = response.content
 print(content)
 '''
+'''
+# 3.3 品类信息查询(未完成)
+shangpin_client.set_path('/commodity/findcategorybypage')
+request_data = {"PageIndex":"1","PageSize":"200"}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
+'''
+'''
+#3.7 基础色系查询（未完成）
+shangpin_client.set_path('/commodity/findcolor')
+request_data = {}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
+'''
+'''
+#3.8 品牌信息查询（未完成）
+shangpin_client.set_path('/commodity/findbrandbypage')
+request_data = {"PageIndex":"1","PageSize":"200"}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
+'''
+'''
+#3.9 地区信息查询（未完成）
+shangpin_client.set_path('/commodity/findareabypage')
+request_data = {"PageIndex":"1","PageSize":"200"}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
+'''
+shangpin_client.set_path('/base/currency')
+request_data = {}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
 '''
 # 1.1. 供货价查询
 shangpin_client.set_path('/supply/findinfo')
@@ -52,7 +96,7 @@ content = response.content
 print(content)
 '''
 '''
-# 2.1 库存更新
+# 2.2 库存更新
 shangpin_client.set_path('/stock/update')
 request_data = {"SkuNo":"30003221001", "InventoryQuantity":100 }
 shangpin_client.set_request_data(request_data)
@@ -61,8 +105,27 @@ content = response.content
 print(content)
 '''
 '''
+# 5.1 采购单分页查询
 shangpin_client.set_path('/purchase/findporderbypage')
-request_data = {"PageIndex":"1","PageSize":"100","UpdateTimeBegin":"","UpdateTimeEnd":""}
+request_data = {"PageIndex":"1","PageSize":"20","UpdateTimeBegin":"2014-01-16 14:00:00","UpdateTimeEnd":"2015-01-17 14:00:00"}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
+'''
+'''
+# 6.1 发货单分页查询
+shangpin_client.set_path('/purchase/finddorderbypage')
+request_data = {"PageIndex":"1","PageSize":"20","UpdateTimeBegin":"2014-01-16 14:00:00","UpdateTimeEnd":"2015-01-17 14:00:00"}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
+'''
+'''
+# 7.1 返货单分页查询
+shangpin_client.set_path('/purchase/findrorderbypage')
+request_data = {"PageIndex":"1","PageSize":"20","UpdateTimeBegin":"2014-01-16 14:00:00","UpdateTimeEnd":"2015-01-17 14:00:00"}
 shangpin_client.set_request_data(request_data)
 response = shangpin_client.req_post()
 content = response.content

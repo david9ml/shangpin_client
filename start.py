@@ -62,6 +62,7 @@ response = shangpin_client.req_post()
 content = response.content
 print(content)
 '''
+'''
 #3.9 地区信息查询（未完成）
 shangpin_client.set_path('/commodity/findareabypage')
 request_data = {"PageIndex":"1","PageSize":"200"}
@@ -69,6 +70,7 @@ shangpin_client.set_request_data(request_data)
 response = shangpin_client.req_post()
 content = response.content
 print(content)
+'''
 '''
 shangpin_client.set_path('/base/currency')
 request_data = {}
@@ -95,7 +97,6 @@ response = shangpin_client.req_post()
 content = response.content
 print(content)
 '''
-'''
 # 2.1 库存查询
 shangpin_client.set_path('/stock/findinfo')
 request_data = ["30003221001", "30002856001"]
@@ -103,7 +104,6 @@ shangpin_client.set_request_data(request_data)
 response = shangpin_client.req_post()
 content = response.content
 print(content)
-'''
 '''
 # 2.2 库存更新
 shangpin_client.set_path('/stock/update')

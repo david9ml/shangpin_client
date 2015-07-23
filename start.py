@@ -36,6 +36,15 @@ content = response.content
 print(content)
 '''
 '''
+# 3.4 品类下销售属性查询
+shangpin_client.set_path('/commodity/findproductattr')
+request_data = {"CategoryNo": "A01B01C01D02"}
+shangpin_client.set_request_data(request_data)
+response = shangpin_client.req_post()
+content = response.content
+print(content)
+'''
+'''
 #3.7 基础色系查询（未完成）
 shangpin_client.set_path('/commodity/findcolor')
 request_data = {}
@@ -53,7 +62,6 @@ response = shangpin_client.req_post()
 content = response.content
 print(content)
 '''
-'''
 #3.9 地区信息查询（未完成）
 shangpin_client.set_path('/commodity/findareabypage')
 request_data = {"PageIndex":"1","PageSize":"200"}
@@ -68,6 +76,7 @@ shangpin_client.set_request_data(request_data)
 response = shangpin_client.req_post()
 content = response.content
 print(content)
+'''
 '''
 # 1.1. 供货价查询
 shangpin_client.set_path('/supply/findinfo')

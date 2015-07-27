@@ -97,13 +97,16 @@ response = shangpin_client.req_post()
 content = response.content
 print(content)
 '''
+'''
 # 2.1 库存查询
 shangpin_client.set_path('/stock/findinfo')
 request_data = ["30003221001", "30002856001"]
+#request_data = ["30092240001"]
 shangpin_client.set_request_data(request_data)
 response = shangpin_client.req_post()
 content = response.content
 print(content)
+'''
 '''
 # 2.2 库存更新
 shangpin_client.set_path('/stock/update')
@@ -113,15 +116,13 @@ response = shangpin_client.req_post()
 content = response.content
 print(content)
 '''
-'''
 # 5.1 采购单分页查询
 shangpin_client.set_path('/purchase/findporderbypage')
-request_data = {"PageIndex":"1","PageSize":"20","UpdateTimeBegin":"2014-01-16 14:00:00","UpdateTimeEnd":"2015-01-17 14:00:00"}
+request_data = {"PageIndex":"1","PageSize":"20","UpdateTimeBegin":"2015-07-16 14:00:00","UpdateTimeEnd":"2015-07-24 23:59:59"}
 shangpin_client.set_request_data(request_data)
 response = shangpin_client.req_post()
 content = response.content
 print(content)
-'''
 '''
 # 6.1 发货单分页查询
 shangpin_client.set_path('/purchase/finddorderbypage')

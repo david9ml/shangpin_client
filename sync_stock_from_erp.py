@@ -32,11 +32,20 @@ def get_shangpin_products():
     response = shangpin_client.req_post()
     content = response.content
     response_dict = json.loads(content, encoding="utf-8")
+    return_dict = response_dict['response']['SopProductSkuIces']
     if response_dict['response']['Total']>100:
+        print("total:{}").format(response_dict['response']['Total'])
         print("exceed 100 page limit!")
+        for i in range(2,2+response_dict['response']['Total']/100):
+            request_data = {"PageIndex":str(i),"PageSize":"100","endTime":"","startTime":""}
+            shangpin_client.set_request_data(request_data)
+            response = shangpin_client.req_post()
+            content = response.content
+            response_dict = json.loads(content, encoding="utf-8")
+            return_dict += response_dict['response']['SopProductSkuIces']
+        return return_dict
     else:
-        pass
-    return response_dict['response']['SopProductSkuIces']
+        return return_dict
 
 def get_exactly_the_product(shangpin_p_model_list, erp_products):
     def product_filter(node, shangpin_p_model_list_lenth):
@@ -90,9 +99,8 @@ def start_sync():
     erp_products = stock_doc.getElementsByTagName("product")
     shangpin_products_list = get_shangpin_products()
     print(shangpin_products_list)
-    map(functools.partial(sync_one_product, erp_products=erp_products), shangpin_products_list)
+    print(len(shangpin_products_list))
+    #map(functools.partial(sync_one_product, erp_products=erp_products), shangpin_products_list)
     pass
 
 start_sync()
-
-

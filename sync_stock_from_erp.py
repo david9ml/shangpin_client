@@ -12,6 +12,7 @@ from datetime import datetime
 import requests
 import functools
 from client import *
+import traceback
 shangpin_client = Shangpin_client()
 
 def get_shangpin_stock(sku_no):
@@ -20,10 +21,22 @@ def get_shangpin_stock(sku_no):
     shangpin_client.set_request_data(request_data)
     response = shangpin_client.req_post()
     content = response.content
+    '''
     print("#########################################################")
     print(request_data)
     print(content)
     print("#########################################################")
+    '''
+    content_dict = json.loads(content, encoding="utf-8")
+    return content_dict
+
+def update_stock(client, sku_no, qty):
+    client.set_path('/stock/update')
+    request_data = {"SkuNo":sku_no, "InventoryQuantity":qty }
+    shangpin_client.set_request_data(request_data)
+    response = shangpin_client.req_post()
+    content = response.content
+    print(content)
 
 def get_shangpin_products():
     shangpin_client.set_path('/commodity/findinfobypage')
@@ -83,16 +96,40 @@ def sync_one_product(product, erp_products):
     shangpin_p_model_str = product['ProductModel']
     shangpin_p_model_list = shangpin_p_model_str.split()
     the_product_node_list = get_exactly_the_product(shangpin_p_model_list=shangpin_p_model_list, erp_products=erp_products)
+    shangpin_sku_no = product['SopSkuIces'][0]['SkuNo']
     #model_list = [node.getElementsByTagName("model")[0].firstChild.data for node in the_product_node_list]
     #print(the_product_node_list)
     if len(the_product_node_list) == 0 :
-        print("Can't find the product in erp_products, decide to ignore or set stock zero...")
+        print("Can't find the product in erp_products, decide to set stock zero...!!!")
+        print('---' + shangpin_p_model_str + '---')
+        stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
+        try:
+            if stock_info['response'][0]['InventoryQuantity'] == 0:
+                print("shangpin stock already zero...skip...")
+            else:
+                update_stock(shangpin_client, shangpin_sku_no, 0)
+                print("set stock zero complete!!!")
+        except:
+            print(stock_info)
+            traceback.print_exc()
+
     elif len(the_product_node_list) == 1 :
-        print("We find the exact product, update stock !")
-        sku_no = product['SopSkuIces'][0]['SkuNo']
-        get_shangpin_stock(sku_no=sku_no)
+        if product['SopSkuIces'][0]['SkuStatus'] == 2:
+            stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
+            print("We find the exact product, update stock !")
+            erp_qty = the_product_node_list[0].getElementsByTagName("quatity")[0].firstChild.data
+            shangpin_qty = stock_info['response'][0]['InventoryQuantity']
+            if erp_qty == shangpin_qty:
+                print("already equal: erp_qty=shangpin_qty...skip...")
+            else:
+                update_stock(shangpin_client, shangpin_sku_no, erp_qty)
+                print("not equal update complete!!!")
+        else:
+            print("product not in sale...skip...")
+            pass
     else:
         print("What's wrong buddy?")
+    time.sleep(3)
 
 def start_sync():
     stock_doc = minidom.parse("./morning.inventory.hk.xml")
@@ -100,7 +137,7 @@ def start_sync():
     shangpin_products_list = get_shangpin_products()
     print(shangpin_products_list)
     print(len(shangpin_products_list))
-    #map(functools.partial(sync_one_product, erp_products=erp_products), shangpin_products_list)
+    map(functools.partial(sync_one_product, erp_products=erp_products), shangpin_products_list)
     pass
 
 start_sync()

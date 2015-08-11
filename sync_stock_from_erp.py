@@ -45,6 +45,8 @@ def get_shangpin_products():
     response = shangpin_client.req_post()
     content = response.content
     response_dict = json.loads(content, encoding="utf-8")
+    print("response_dict:")
+    print(response_dict)
     return_dict = response_dict['response']['SopProductSkuIces']
     if response_dict['response']['Total']>100:
         print("total:{}").format(response_dict['response']['Total'])
@@ -134,7 +136,15 @@ def sync_one_product(product, erp_products):
 def start_sync():
     stock_doc = minidom.parse("./morning.inventory.hk.xml")
     erp_products = stock_doc.getElementsByTagName("product")
-    shangpin_products_list = get_shangpin_products()
+    while True:
+        try:
+            shangpin_client.reset()
+            shangpin_products_list = get_shangpin_products()
+            break
+        except:
+            traceback.print_exc()
+            print("retry shangpin_products_list in 30secs")
+            time.sleep(30)
     print(shangpin_products_list)
     print(len(shangpin_products_list))
     map(functools.partial(sync_one_product, erp_products=erp_products), shangpin_products_list)

@@ -103,15 +103,15 @@ def sync_one_product(product, erp_products):
         print("Can't find the product in erp_products, decide to set stock zero...!!!")
         print('---' + shangpin_p_model_str + '---')
         stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
-        try:
+        if product['SopSkuIces'][0]['IsDeleted'] == 1:
+            print("product deleted in shangpin...skip...")
+            pass
+        else:
             if stock_info['response'][0]['InventoryQuantity'] == 0:
                 print("shangpin stock already zero...skip...")
             else:
                 update_stock(shangpin_client, shangpin_sku_no, 0)
                 print("set stock zero complete!!!")
-        except:
-            print(stock_info)
-            traceback.print_exc()
 
     elif len(the_product_node_list) == 1 :
         if product['SopSkuIces'][0]['SkuStatus'] == 2:
@@ -119,17 +119,17 @@ def sync_one_product(product, erp_products):
             print("We find the exact product, update stock !")
             erp_qty = the_product_node_list[0].getElementsByTagName("quatity")[0].firstChild.data
             shangpin_qty = stock_info['response'][0]['InventoryQuantity']
-            if erp_qty == shangpin_qty:
+            if int(erp_qty) == int(shangpin_qty):
                 print("already equal: erp_qty=shangpin_qty...skip...")
             else:
                 update_stock(shangpin_client, shangpin_sku_no, erp_qty)
-                print("not equal update complete!!!")
+                print("not equal update %s;%s;%s complete!!!" % (str(shangpin_sku_no), str(shangpin_qty), str(erp_qty)))
         else:
             print("product not in sale...skip...")
             pass
     else:
         print("What's wrong buddy?")
-    time.sleep(3)
+    time.sleep(1)
 
 def start_sync():
     stock_doc = minidom.parse("./morning.inventory.hk.xml")
@@ -140,4 +140,10 @@ def start_sync():
     map(functools.partial(sync_one_product, erp_products=erp_products), shangpin_products_list)
     pass
 
-start_sync()
+while True:
+    start_sync()
+    import gc
+    gc.collect()
+    print("sleep 5*60 sec...")
+    time.sleep(5*60)
+

@@ -109,11 +109,15 @@ def sync_one_product(product, erp_products):
             print("product deleted in shangpin...skip...")
             pass
         else:
-            if stock_info['response'][0]['InventoryQuantity'] == 0:
-                print("shangpin stock already zero...skip...")
-            else:
-                update_stock(shangpin_client, shangpin_sku_no, 0)
-                print("set stock zero complete!!!")
+            try:
+                if stock_info['response'][0]['InventoryQuantity'] == 0:
+                    print("shangpin stock already zero...skip...")
+                else:
+                    update_stock(shangpin_client, shangpin_sku_no, 0)
+                    print("set stock zero complete!!!")
+            except:
+                traceback.print_exc()
+                pass
 
     elif len(the_product_node_list) == 1 :
         if product['SopSkuIces'][0]['SkuStatus'] == 2:
@@ -134,7 +138,14 @@ def sync_one_product(product, erp_products):
     time.sleep(1)
 
 def start_sync():
-    stock_doc = minidom.parse("./morning.inventory.hk.xml")
+    while True:
+        try:
+            stock_doc = minidom.parse("./morning.inventory.hk.xml")
+            break
+        except:
+            traceback.print_exc()
+            print("retry minidom parse in 30secs...")
+            time.sleep(30)
     erp_products = stock_doc.getElementsByTagName("product")
     while True:
         try:

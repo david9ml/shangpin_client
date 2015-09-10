@@ -121,15 +121,21 @@ def sync_one_product(product, erp_products):
 
     elif len(the_product_node_list) == 1 :
         if product['SopSkuIces'][0]['SkuStatus'] == 2:
+            shangpin_qty = None
             stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
             print("We find the exact product, update stock !")
             erp_qty = the_product_node_list[0].getElementsByTagName("quatity")[0].firstChild.data
-            shangpin_qty = stock_info['response'][0]['InventoryQuantity']
-            if int(erp_qty) == int(shangpin_qty):
-                print("already equal: erp_qty=shangpin_qty...skip...")
-            else:
-                update_stock(shangpin_client, shangpin_sku_no, erp_qty)
-                print("not equal update %s;%s;%s complete!!!" % (str(shangpin_sku_no), str(shangpin_qty), str(erp_qty)))
+            try:
+                shangpin_qty = stock_info['response'][0]['InventoryQuantity']
+            except:
+                traceback.print_exc()
+                pass
+            if shangpin_qty != None:
+                if int(erp_qty) == int(shangpin_qty):
+                    print("already equal: erp_qty=shangpin_qty...skip...")
+                else:
+                    update_stock(shangpin_client, shangpin_sku_no, erp_qty)
+                    print("not equal update %s;%s;%s complete!!!" % (str(shangpin_sku_no), str(shangpin_qty), str(erp_qty)))
         else:
             print("product not in sale...skip...")
             pass

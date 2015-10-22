@@ -48,6 +48,9 @@ def get_shangpin_products():
     print("response_dict:")
     print(response_dict)
     return_dict = response_dict['response']['SopProductSkuIces']
+    print("---------------------------------------------total products------------------------------------------------------------")
+    print(response_dict['response']['Total'])
+    print("---------------------------------------------total products------------------------------------------------------------")
     if response_dict['response']['Total']>100:
         print("total:{}").format(response_dict['response']['Total'])
         print("exceed 100 page limit!")
@@ -98,50 +101,56 @@ def sync_one_product(product, erp_products):
     shangpin_p_model_str = product['ProductModel']
     shangpin_p_model_list = shangpin_p_model_str.split()
     the_product_node_list = get_exactly_the_product(shangpin_p_model_list=shangpin_p_model_list, erp_products=erp_products)
-    shangpin_sku_no = product['SopSkuIces'][0]['SkuNo']
+    SopSkuIces = product['SopSkuIces']
+    shangpin_sku_no = None
+    for sopskuic in SopSkuIces:
+        if sopskuic['IsDeleted'] == 0:
+            shangpin_sku_no = sopskuic['SkuNo']
+            #if shangpin_sku_no != "30186558001":
+            #    return
     #model_list = [node.getElementsByTagName("model")[0].firstChild.data for node in the_product_node_list]
     #print(the_product_node_list)
-    if len(the_product_node_list) == 0 :
-        print("Can't find the product in erp_products, decide to set stock zero...!!!")
-        print('---' + shangpin_p_model_str + '---')
-        stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
-        if product['SopSkuIces'][0]['IsDeleted'] == 1:
-            print("product deleted in shangpin...skip...")
-            pass
-        else:
-            try:
-                if stock_info['response'][0]['InventoryQuantity'] == 0:
-                    print("shangpin stock already zero...skip...")
+            if len(the_product_node_list) == 0 :
+                print("Can't find the product in erp_products, decide to set stock zero...!!!")
+                print('---' + shangpin_p_model_str + '---')
+                stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
+                if sopskuic['IsDeleted'] == 1:
+                    print("product deleted in shangpin...skip...")
+                    pass
                 else:
-                    update_stock(shangpin_client, shangpin_sku_no, 0)
-                    print("set stock zero complete!!!")
-            except:
-                traceback.print_exc()
-                pass
+                    try:
+                        if stock_info['response'][0]['InventoryQuantity'] == 0:
+                            print("shangpin stock already zero...skip...")
+                        else:
+                            update_stock(shangpin_client, shangpin_sku_no, 0)
+                            print("set stock zero complete!!!")
+                    except:
+                        traceback.print_exc()
+                        pass
 
-    elif len(the_product_node_list) == 1 :
-        if product['SopSkuIces'][0]['SkuStatus'] == 2:
-            shangpin_qty = None
-            stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
-            print("We find the exact product, update stock !")
-            erp_qty = the_product_node_list[0].getElementsByTagName("quatity")[0].firstChild.data
-            try:
-                shangpin_qty = stock_info['response'][0]['InventoryQuantity']
-            except:
-                traceback.print_exc()
-                pass
-            if shangpin_qty != None:
-                if int(erp_qty) == int(shangpin_qty):
-                    print("already equal: erp_qty=shangpin_qty...skip...")
+            elif len(the_product_node_list) == 1 :
+                if sopskuic['SkuStatus'] == 2:
+                    shangpin_qty = None
+                    stock_info = get_shangpin_stock(sku_no=shangpin_sku_no)
+                    print("We find the exact product, update stock !")
+                    erp_qty = the_product_node_list[0].getElementsByTagName("quatity")[0].firstChild.data
+                    try:
+                        shangpin_qty = stock_info['response'][0]['InventoryQuantity']
+                    except:
+                        traceback.print_exc()
+                        pass
+                    if shangpin_qty != None:
+                        if int(erp_qty) == int(shangpin_qty):
+                            print("already equal: erp_qty=shangpin_qty...skip...")
+                        else:
+                            update_stock(shangpin_client, shangpin_sku_no, erp_qty)
+                            print("not equal update %s;%s;%s complete!!!" % (str(shangpin_sku_no), str(shangpin_qty), str(erp_qty)))
                 else:
-                    update_stock(shangpin_client, shangpin_sku_no, erp_qty)
-                    print("not equal update %s;%s;%s complete!!!" % (str(shangpin_sku_no), str(shangpin_qty), str(erp_qty)))
-        else:
-            print("product not in sale...skip...")
-            pass
-    else:
-        print("What's wrong buddy?")
-    time.sleep(1)
+                    print("product not in sale...skip...")
+                    pass
+            else:
+                print("What's wrong buddy?")
+            time.sleep(1)
 
 def start_sync():
     while True:
@@ -162,13 +171,20 @@ def start_sync():
             traceback.print_exc()
             print("retry shangpin_products_list in 30secs")
             time.sleep(30)
-    print(shangpin_products_list)
+    #print(shangpin_products_list)
     print(len(shangpin_products_list))
     map(functools.partial(sync_one_product, erp_products=erp_products), shangpin_products_list)
     pass
 
 while True:
-    start_sync()
+    while True:
+        try:
+            start_sync()
+            break
+        except:
+            traceback.print_exc()
+            print("Network failure, retry in 60secs...")
+            time.sleep(60)
     import gc
     gc.collect()
     print("sleep 5*60 sec...")
